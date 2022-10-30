@@ -23,31 +23,24 @@ public class NumberManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI buttonText15;
     [SerializeField] TextMeshProUGUI scoreLabel;
     TextMeshProUGUI[] buttonTexts;
-    int[] numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0};
+    int[] numbers = {1, 2, 3, 4, 5, 0};
+    int[] answerNumbers = {1, 2, 3, 4, 5, 0};
     int[, ] relasionshipNumbers = {
-    //   1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
-        {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0},
+    //   1  2  3  4  5    6  7  8  9  10 11 12 13 14 15
+        {0, 1, 1, 1, 1,   1},
+        {1, 0, 1, 1, 1,   1},
+        {1, 1, 0, 1, 1,   1},
+        {1, 1, 1, 0, 1,   1},
+        {1, 1, 1, 1, 0,   1},
 
-        {0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-        {0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0},
-        {0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0},
-        {0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0},
-        {0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1},
-        
-        {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0},
+        {1, 1, 1, 1, 1,   0},
     };
     int temp = 0;
     int randomNumber1 = 0;
     int randomNumber2 = 0;
     int scoreNumber = 0;
+    int emptyNumber = 5;
+    int clear = 0;
 
     // Start is called before the first frame update
     void Start() {
@@ -56,6 +49,8 @@ public class NumberManager : MonoBehaviour
         shuffleNumbers();
         setNumbers();
         scoreReload();
+
+        Invoke("solvePuzzle", 1);
     }
 
     // Update is called once per frame
@@ -74,8 +69,11 @@ public class NumberManager : MonoBehaviour
 
                 scoreNumber = scoreNumber + 1;
                 scoreReload();
+                checkAnswer();
             }
         }
+
+        setEmptyNumber();
     }
 
     public void setNumbers() {
@@ -98,11 +96,57 @@ public class NumberManager : MonoBehaviour
             numbers[randomNumber2] = temp;
         }
 
+        clear = 0;
         scoreNumber = 0;
+        setEmptyNumber();
         scoreReload();
     }
 
     public void scoreReload() {
         scoreLabel.text = "Move:" + scoreNumber.ToString();
+    }
+
+    public void setEmptyNumber() {
+        for (int i = 0; i < numbers.Length; i++) {
+            if (numbers[i] == 0) {
+                emptyNumber = i;
+            }
+        }
+    }
+
+    public void checkAnswer() {
+        clear = 1;
+        for (int i = 0; i < numbers.Length; i++) {
+            if (numbers[i] != answerNumbers[i]) {
+                clear = 0;
+            }
+        }
+    }
+
+    public void solvePuzzle() {
+        if (numbers[emptyNumber] != answerNumbers[emptyNumber]) {
+            for (int i = 0; i < numbers.Length; i++) {
+                if (numbers[i] == answerNumbers[emptyNumber]) {
+                    clickButton(i + 1);
+                    break;
+                }
+            }
+        } else {
+            // 0 ~ numbers.Length - 1 random number
+            randomNumber1 = UnityEngine.Random.Range(0, numbers.Length);
+            while (numbers[randomNumber1] == 0 || numbers[randomNumber1] == answerNumbers[randomNumber1]) {
+                // 0 ~ numbers.Length - 1 random number
+                randomNumber1 = UnityEngine.Random.Range(0, numbers.Length);
+            }
+            clickButton(randomNumber1 + 1);
+        }
+
+        if (clear == 0) {
+            Invoke("solvePuzzle", 1);
+        }
+    }
+
+    public void resetSolvePuzzle() {
+        Invoke("solvePuzzle", 1);
     }
 }
